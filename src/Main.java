@@ -1,77 +1,72 @@
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Main {
-    private String pin = "1234"; // PIN predefinido
-    private double balance = 1000; // Saldo inicial
+    private String pin = "1234";
+    private double balance = 1000;
+    private ArrayList<String> transactionHistory = new ArrayList<>();
+    private static final Scanner sc = new Scanner(System.in);
 
     public boolean authenticateUser() {
-        Scanner sc = new Scanner(System.in);
         int attempts = 0;
-
         while (attempts < 3) {
             System.out.print("Ingrese su PIN: ");
-            String inputPin = sc.nextLine(); // Leer el PIN como String
-
-            if (this.pin.equals(inputPin)) { // Comparar con el PIN predefinido
-                return true; // PIN correcto
+            String inputPin = sc.nextLine();
+            if (this.pin.equals(inputPin)) {
+                return true;
             } else {
                 attempts++;
                 System.out.println("PIN incorrecto. Intento " + attempts + " de 3.");
             }
         }
-        return false; // Después de 3 intentos fallidos
+        return false;
     }
-
 
     public void displayMenu() {
-        Scanner sc = new Scanner(System.in);
-        try {
-
-            boolean isAuthenticated = authenticateUser();
-            if (isAuthenticated) {
-                System.out.println("Usuario autenticado.");
-
-
-
-            while (true) { // Bucle para repetir el menú
-                System.out.println("\nOpciones del ATM:");
-                System.out.println("1. Consultar saldo");
-                System.out.println("2. Depositar dinero");
-                System.out.println("3. Retirar dinero");
-                System.out.println("4. Salir");
-                System.out.print("Selecciona una opción: ");
-
-                try {
-                    int option = sc.nextInt();
-                    switch (option) {
-                        case 1:
-                            checkBalance();
-                            break;
-                        case 2:
-                            depositMoney(sc);
-                            break;
-                        case 3:
-                            withdrawMoney(sc);
-                            break;
-                        case 4:
-                            System.out.println("Saliendo del cajero...");
-                            return; // Salir del menú
-                        default:
-                            System.out.println("Opción no válida.");
-                    }
-                } catch (InputMismatchException e) {
-                    System.out.println("Por favor ingrese un número válido.");
-                    sc.next(); // Limpiar el buffer
-                }
-
-            }
-        }  else {
+        if (!authenticateUser()) {
             System.out.println("Acceso denegado.");
+            return;
         }
-    }
-        finally {
-            sc.close(); // Cierra el scanner cuando ya no se necesita
+
+        while (true) {
+            System.out.println("\nOpciones del ATM:");
+            System.out.println("1. Consultar saldo");
+            System.out.println("2. Depositar dinero");
+            System.out.println("3. Retirar dinero");
+            System.out.println("4. Transferencia Internacional");
+            System.out.println("5. Ver historial de transacciones");
+            System.out.println("6. Salir");
+            System.out.print("Selecciona una opción: ");
+
+            try {
+                int option = sc.nextInt();
+                switch (option) {
+                    case 1:
+                        checkBalance();
+                        break;
+                    case 2:
+                        depositMoney();
+                        break;
+                    case 3:
+                        withdrawMoney();
+                        break;
+                    case 4:
+                        internationalTransfer();
+                        break;
+                    case 5:
+                        viewTransactionHistory();
+                        break;
+                    case 6:
+                        System.out.println("Saliendo del cajero...");
+                        return;
+                    default:
+                        System.out.println("Opción no válida.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Por favor ingrese un número válido.");
+                sc.next();
+            }
         }
     }
 
@@ -79,46 +74,50 @@ public class Main {
         System.out.println("Saldo actual: $" + balance);
     }
 
-    public void depositMoney(Scanner sc) {
+    public void depositMoney() {
         System.out.print("Ingrese cantidad a depositar: ");
         double amount = sc.nextDouble();
         if (amount > 0) {
             balance += amount;
+            transactionHistory.add("Depósito: $" + amount);
             System.out.println("Depósito exitoso. Nuevo saldo: $" + balance);
         } else {
             System.out.println("Cantidad inválida.");
         }
     }
 
-    public void withdrawMoney(Scanner sc) {
+    public void withdrawMoney() {
         System.out.print("Ingrese cantidad a retirar: ");
         double amount = sc.nextDouble();
         if (amount > 0 && amount <= balance) {
             balance -= amount;
+            transactionHistory.add("Retiro: $" + amount);
             System.out.println("Retiro exitoso. Nuevo saldo: $" + balance);
         } else {
             System.out.println("Fondos insuficientes o cantidad inválida.");
         }
     }
 
-
-
-
+    public void internationalTransfer() {
+        System.out.print("Ingrese cantidad a transferir: ");
+        double transferAmount = sc.nextDouble();
+        sc.nextLine();
+        System.out.print("Ingrese el país de destino: ");
+        String country = sc.nextLine();
+        System.out.println("Transferencia de $" + transferAmount + " a " + country + " realizada con éxito.");
+    }
+    public void viewTransactionHistory() {
+        if (transactionHistory.isEmpty()) {
+            System.out.println("No hay transacciones registradas.");
+        } else {
+            System.out.println("\nHistorial de transacciones:");
+            for (String transaction : transactionHistory) {
+                System.out.println(transaction);
+            }
+        }
+    }
     public static void main(String[] args) {
-        // Create an instance of the Main class
-        Main mainUno = new Main();
-        mainUno.balance = 5400;
-        mainUno.pin = "6789";
-        Main mainDos = new Main();
-        mainDos.balance = 890500;
-        Main mainTres = new Main();
-        mainTres.balance = 456400;
-        mainTres.pin = "1289";
-
-
-        // Call the displayMenu method
-       // mainUno.displayMenu();
-        //mainDos.displayMenu();
-       // mainTres.displayMenu();
+        Main atm = new Main();
+        atm.displayMenu();
     }
 }
